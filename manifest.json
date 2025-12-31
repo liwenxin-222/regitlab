@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "regitlab",
+  "version": "0.0.1",
+  "description": "gitlab分支快速选择、创建pull Request自动化、一键生成日志",
+  "permissions": [],
+  "host_permissions": [
+    "https://devops.cscec.com/*",
+    "https://dcs-uat-gray.cscec.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "gitLab协同工作",
+    "default_icon": "icons/icon-16.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://devops.cscec.com/*",
+        "https://dcs-uat-gray.cscec.com/*"
+      ],
+      "js": ["content.js"]
+    }
+  ]
+}
