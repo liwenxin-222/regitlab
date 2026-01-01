@@ -1,8 +1,10 @@
 class CoreController {
   constructor() {
+    this.userInfoService = new UserInfoService();
     this.commonHelper = new CommonHelper();
   }
   init = () => {
+    this.userInfoService.renderUserInfo();
     this.addEventListener();
   };
   addEventListener = () => {
@@ -222,6 +224,42 @@ class CommonHelper {
     } catch (error) {
       this.showMessage("复制失败，插件需要聚焦状态才能复制");
     }
+  };
+}
+class UserInfoService {
+  constructor() {
+    this.commonHelper = new CommonHelper();
+  }
+  /**
+   * 渲染用户信息
+   */
+  renderUserInfo = async () => {
+    const { email, project, geminiKey, prompt } = await this.getUserInfo();
+    const emailInput = document.getElementById("email-input");
+    const projectInput = document.getElementById("project-input");
+    const geminiKeyInput = document.getElementById("gemini-key-input");
+    const promptInput = document.getElementById("prompt-input");
+    if (emailInput && email) {
+      emailInput.value = email;
+    }
+    if (projectInput && project) {
+      projectInput.value = project;
+    }
+    if (geminiKeyInput && geminiKey) {
+      geminiKeyInput.value = geminiKey;
+    }
+    if (promptInput && prompt) {
+      promptInput.value = prompt;
+    }
+  };
+  /**
+   * 获取用户信息
+   * @returns {Object}
+   */
+  getUserInfo = async () => {
+    const result = await this.commonHelper.getLocalStorage("userInfo");
+    const { email, project, geminiKey, prompt } = result || {};
+    return { email, project, geminiKey, prompt };
   };
 }
 const coreController = new CoreController();

@@ -85,11 +85,50 @@ async function setupReplacementRules() {
 
   isSettingUp = false;
 }
+async function initLocalStorage() {
+  const config = {
+    cherry_pick: {
+      btn: "cherry_pick",
+      default: true,
+      url: "https://devops.cscec.com/osc/_source/osc/cip-economic/cost-react-1/-/cherry_pick/new",
+    },
+    pipeline: {
+      btn: "pipeline",
+      default: true,
+      url: "https://devops.cscec.com/osc/_ipipe/new-ipipe/pipelines/list?viewId=FAVORITE",
+    },
+    my_board: {
+      btn: "my_board",
+      default: true,
+      url: "https://devops.cscec.com/osc/_team/osc/workspaces/cip-economic/boards/ad788dc8-5436-42f1-8ba6-a9ac535046ce",
+    },
+  };
+  const defaultPrompt =
+    "根据我的gitlab提交记录生成简短日报；1、按“[日期]：内容”格式输出，每天控制在50字以内；2、若某天内容过少，可从前/后一天合理挪用部分任务，确保每天工作量饱满；3、如内容包含“生产”，“开发”相关任务，需重点提及并优先保留；4、日志内容稍微具体点，不要过于笼统，避免假大空；内容如下：";
+  const defaultProject = "cip-economic/cost-react-1";
+  const result = await chrome.storage.local.get("userInfo");
+  const { urlButtons = [], prompt = "", project = "" } = result.userInfo || {};
+  let _prompt = "";
+  let _project = "";
+  let _urlButtons = [];
+  if (!prompt) _prompt = defaultPrompt;
+  if (!project) _project = defaultProject;
+  if (urlButtons.length === 0) _urlButtons = Object.values(config);
+  await chrome.storage.local.set({
+    userInfo: {
+      ...(result.userInfo || {}),
+      ...(_prompt ? { prompt: _prompt } : {}),
+      ...(_project ? { project: _project } : {}),
+      ...(_urlButtons.length > 0 ? { urlButtons: _urlButtons } : {}),
+    },
+  });
+}
 // 外层执行：覆盖浏览器重启、插件唤醒等场景
 setupReplacementRules();
 chrome.runtime.onInstalled.addListener(async (details) => {
   // 判断触发原因：install（首次安装）、update（插件更新），避免重复执行
   if (details.reason === "install" || details.reason === "update") {
     await setupReplacementRules();
+    await initLocalStorage();
   }
 });

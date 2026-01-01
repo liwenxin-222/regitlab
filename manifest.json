@@ -5,7 +5,8 @@
   "description": "gitlab分支快速选择、创建pull Request自动化、一键生成日志",
   "permissions": [
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "storage"
   ],
   "host_permissions": [
     "https://devops.cscec.com/*",
