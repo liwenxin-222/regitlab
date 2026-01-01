@@ -3,6 +3,7 @@ class CoreController {
     this.userInfoService = new UserInfoService();
     this.urlButtonManager = new UrlButtonManager();
     this.dcsService = new DcsService();
+    this.gitlabService = new GitlabService();
     this.commonHelper = new CommonHelper();
   }
   init = () => {
@@ -65,6 +66,14 @@ class CoreController {
           promptInput.value.trim()
         );
       });
+    }
+    // 创建Pull Request按钮
+    const autoPullTitleBtn = document.getElementById("auto-pull-title-btn");
+    if (autoPullTitleBtn) {
+      autoPullTitleBtn.addEventListener(
+        "click",
+        this.gitlabService.autoCreatePullRequest
+      );
     }
     // 设置页面开关按钮
     const settingsIcon = document.getElementById("settings-icon");
@@ -137,7 +146,7 @@ class CommonHelper {
   validateDomain = async (types) => {
     const tab = await this.getCurrentTab();
     try {
-      const url = tab.url || '';
+      const url = tab.url || "";
       for (const type of types) {
         if (this.whiteList[type].some((item) => url.includes(item))) {
           return {
@@ -403,8 +412,65 @@ class UrlButtonManager {
     );
     btnNameInput.value = "";
     urlInput.value = "";
-    this.commonHelper.showMessage("添加成功","success");
+    this.commonHelper.showMessage("添加成功", "success");
     await this.loadUrlButtons();
+  };
+}
+class GitlabService {
+  constructor() {
+    this.commonHelper = new CommonHelper();
+    this.userInfoService = new UserInfoService();
+  }
+  /**
+   * 自动填写标题并创建Pull Request
+   */
+  autoCreatePullRequest = async () => {
+    try {
+      const { isInWhiteList, tab } = await this.commonHelper.validateDomain([
+        "devops",
+      ]);
+      if (!isInWhiteList) return;
+      const { email, project } = await this.userInfoService.getUserInfo();
+      if (!email || !project) {
+        this.commonHelper.showMessage("请先配置邮箱和项目");
+        return;
+      }
+      if (
+        !tab.url?.includes(
+          `https://devops.cscec.com/osc/_source/osc/${project}/-/pull_requests/new?source_branch`
+        )
+      ) {
+        this.commonHelper.showMessage("当前页面不是创建Pull Request页面");
+        return;
+      }
+
+      const params = this.commonHelper.parseUrlParams(tab.url);
+      const finalUrl = `https://devops.cscec.com/api/code/api/osc/${project}/-/pull_requests/new?type=commits&target_branch=${params.target_branch}&check_branch=&source_branch=${params.source_branch}&page=1&per_page=2`;
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            action: "getPullRequestList",
+            data: { url: finalUrl },
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+              return;
+            }
+            resolve(response);
+          }
+        );
+      });
+      if (response && response.code === 0 && response.data?.title) {
+        await this.commonHelper.copyToClipboard(response.data.title);
+        this.commonHelper.showMessage(response.data.title, "success");
+        this.commonHelper.closeWindow();
+      } else {
+        this.commonHelper.showMessage("获取Title失败");
+      }
+    } catch (error) {
+      this.commonHelper.showMessage("执行异常: 刷新页面后重试");
+    }
   };
 }
 class DcsService {
