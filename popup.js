@@ -2,6 +2,7 @@ class CoreController {
   constructor() {
     this.userInfoService = new UserInfoService();
     this.urlButtonManager = new UrlButtonManager();
+    this.dcsService = new DcsService();
     this.commonHelper = new CommonHelper();
   }
   init = () => {
@@ -10,6 +11,11 @@ class CoreController {
     this.addEventListener();
   };
   addEventListener = () => {
+    // 获取用户信息按钮
+    const getUserBtn = document.getElementById("get-user-btn");
+    if (getUserBtn) {
+      getUserBtn.addEventListener("click", this.dcsService.fetchUserInfo);
+    }
     // 添加跳转按钮
     const addMenuButton = document.getElementById("add-menu-button");
     if (addMenuButton) {
@@ -357,6 +363,46 @@ class UrlButtonManager {
     urlInput.value = "";
     this.commonHelper.showMessage("添加成功","success");
     await this.loadUrlButtons();
+  };
+}
+class DcsService {
+  constructor() {
+    this.commonHelper = new CommonHelper();
+  }
+  /**
+   * 获取用户信息
+   */
+  fetchUserInfo = async () => {
+    try {
+      const { isInWhiteList, tab } = await this.commonHelper.validateDomain([
+        "gray",
+      ]);
+      if (!isInWhiteList) return;
+      const results = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        world: "MAIN",
+        func: () => {
+          if (
+            typeof window.$udp !== "undefined" &&
+            typeof window.$udp.getUser === "function"
+          ) {
+            return window.$udp.getUser();
+          }
+          return null;
+        },
+      });
+      if (results?.[0]?.result) {
+        const userInfo = results?.[0]?.result;
+        const jsonStr = JSON.stringify(userInfo, null, 2);
+        await this.commonHelper.copyToClipboard(jsonStr);
+        this.commonHelper.showMessage("用户信息已复制到剪切板", "success");
+        this.commonHelper.closeWindow();
+      } else {
+        this.commonHelper.showMessage("$udp对象不存在无法获取用户信息");
+      }
+    } catch (error) {
+      this.commonHelper.showMessage("执行异常: 刷新页面后重试");
+    }
   };
 }
 class UserInfoService {

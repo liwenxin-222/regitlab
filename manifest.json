@@ -6,7 +6,8 @@
   "permissions": [
     "declarativeNetRequest",
     "declarativeNetRequestWithHostAccess",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "https://devops.cscec.com/*",
