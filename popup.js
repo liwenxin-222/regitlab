@@ -534,28 +534,33 @@ class UrlButtonManager {
     container.innerHTML = buttons
       .map((item, index) => {
         const isDefault = item.default === true;
-        const deleteBadge = isDefault
+        const chipClass = isDefault ? "chip-system" : "chip-custom";
+        const deleteBtn = isDefault
           ? ""
-          : `<span class="delete-badge" data-index="${index}"></span>`;
+          : `<span class="chip-delete" data-index="${index}" title="删除">×</span>`;
         return `
-        <div class="url-button-item ${isDefault ? "default" : ""}">
-          <button class="url-btn btn-teal" data-url="${item.url}">${
-          item.btn
-        }</button>
-          ${deleteBadge}
-        </div>
+        <${isDefault ? "a" : "div"} class="chip ${chipClass}" data-url="${item.url}" ${isDefault ? 'href="#"' : ''}>
+          ${item.btn}
+          ${deleteBtn}
+        </${isDefault ? "a" : "div"}>
       `;
       })
       .join("");
 
-    container.querySelectorAll(".url-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        this.commonHelper.updateCurrentTabUrl(e.target.getAttribute("data-url"));
+    container.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", (e) => {
+        if (e.target.classList.contains("chip-delete")) {
+          return;
+        }
+        const url = chip.getAttribute("data-url");
+        if (url) {
+          this.commonHelper.updateCurrentTabUrl(url);
+        }
       });
     });
 
-    container.querySelectorAll(".delete-badge").forEach((badge) => {
-      badge.addEventListener("click", (e) => {
+    container.querySelectorAll(".chip-delete").forEach((deleteBtn) => {
+      deleteBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         const index = parseInt(e.target.getAttribute("data-index"));
         this.deleteUrlButton(index);
@@ -812,6 +817,13 @@ class GitlabService {
       this.commonHelper.setButtonLoading(buttonId, false);
       return;
     }
+    const { isInWhiteList } = await this.commonHelper.validateDomain([
+      "devops",
+    ]);
+    if (!isInWhiteList) {
+      this.commonHelper.setButtonLoading(buttonId, false);
+      return;
+    }
     // 获取并重置显示区域
     const outputDiv = document.getElementById("ai-report-output");
     const copyBtn = document.getElementById("copy-report-btn");
@@ -823,15 +835,7 @@ class GitlabService {
     }
     if (copyBtn) copyBtn.style.display = "none";
     try {
-      const { isInWhiteList } = await this.commonHelper.validateDomain([
-        "devops",
-      ]);
-      if (!isInWhiteList) {
-        this.commonHelper.setButtonLoading(buttonId, false);
-        return;
-      }
       const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/commits?commit_id=&keyword=&committer_name=${email}&author_name=&start_date=${firstDay}&end_date=${lastDay}&count=0&ref=heads%2Fuat&path=&page=1&per_page=200&scope=include_refs`;
-
       const response = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
           {
