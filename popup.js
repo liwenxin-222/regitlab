@@ -5,6 +5,8 @@ class CoreController {
     this.dcsService = new DcsService();
     this.gitlabService = new GitlabService();
     this.commonHelper = new CommonHelper();
+    this.pipelineService = new PipelineService();
+    this.eventHandlers = [];
   }
   init = () => {
     this.urlButtonManager.loadUrlButtons();
@@ -119,6 +121,153 @@ class CoreController {
         settingsPanel.classList.add("hide");
       });
     }
+    this.pipelineAndListeners();
+  };
+  pipelineAndListeners = () => {
+    // 运行成本gray流水线按钮
+    const costGrayBtn = document.getElementById("run-pipeline-btn-cost-gray");
+    if (costGrayBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "cost",
+          "gray",
+          "run-pipeline-btn-cost-gray"
+        );
+      };
+      costGrayBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: costGrayBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行成本uat流水线按钮
+    const costUatBtn = document.getElementById("run-pipeline-btn-cost-uat");
+    if (costUatBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "cost",
+          "uat",
+          "run-pipeline-btn-cost-uat"
+        );
+      };
+      costUatBtn.addEventListener("click", handler);
+      this.eventHandlers.push({ element: costUatBtn, event: "click", handler });
+    }
+    // 运行公共gray流水线按钮
+    const publicGrayBtn = document.getElementById(
+      "run-pipeline-btn-public-gray"
+    );
+    if (publicGrayBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "public",
+          "gray",
+          "run-pipeline-btn-public-gray"
+        );
+      };
+      publicGrayBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: publicGrayBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行公共uat流水线按钮
+    const publicUatBtn = document.getElementById("run-pipeline-btn-public-uat");
+    if (publicUatBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "public",
+          "uat",
+          "run-pipeline-btn-public-uat"
+        );
+      };
+      publicUatBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: publicUatBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行目标gray流水线按钮
+    const targetGrayBtn = document.getElementById(
+      "run-pipeline-btn-target-gray"
+    );
+    if (targetGrayBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "target",
+          "gray",
+          "run-pipeline-btn-target-gray"
+        );
+      };
+      targetGrayBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: targetGrayBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行目标uat流水线按钮
+    const targetUatBtn = document.getElementById("run-pipeline-btn-target-uat");
+    if (targetUatBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "target",
+          "uat",
+          "run-pipeline-btn-target-uat"
+        );
+      };
+      targetUatBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: targetUatBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行收入gray流水线按钮
+    const incomeGrayBtn = document.getElementById(
+      "run-pipeline-btn-income-gray"
+    );
+    if (incomeGrayBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "income",
+          "gray",
+          "run-pipeline-btn-income-gray"
+        );
+      };
+      incomeGrayBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: incomeGrayBtn,
+        event: "click",
+        handler,
+      });
+    }
+    // 运行收入uat流水线按钮
+    const incomeUatBtn = document.getElementById("run-pipeline-btn-income-uat");
+    if (incomeUatBtn) {
+      const handler = () => {
+        this.pipelineService.runPipeline(
+          "income",
+          "uat",
+          "run-pipeline-btn-income-uat"
+        );
+      };
+      incomeUatBtn.addEventListener("click", handler);
+      this.eventHandlers.push({
+        element: incomeUatBtn,
+        event: "click",
+        handler,
+      });
+    }
+  };
+  removeEventListener = () => {
+    this.eventHandlers.forEach(({ element, event, handler }) => {
+      element.removeEventListener(event, handler);
+    });
+    this.eventHandlers = [];
   };
 }
 class CommonHelper {
@@ -328,6 +477,23 @@ class CommonHelper {
     if (!tab) return;
     await chrome.tabs.reload(tab.id);
   };
+  /**
+   * 设置按钮加载状态
+   */
+  setButtonLoading = (buttonId, loading) => {
+    const btn = document.getElementById(buttonId);
+    if (btn) {
+      btn.disabled = loading;
+      if (loading) {
+        btn.textContent = "加载中...";
+      } else {
+        const originalText = btn.getAttribute("data-original-text");
+        if (originalText) {
+          btn.textContent = originalText;
+        }
+      }
+    }
+  };
 }
 class UrlButtonManager {
   constructor() {
@@ -477,10 +643,12 @@ class GitlabService {
           `https://devops.cscec.com/osc/_source/osc/${project}/-/branches`
         )
       ) {
-        this.commonHelper.showMessage("当前页面不是我的分支页面，先看一眼确定一下哦");
+        this.commonHelper.showMessage(
+          "当前页面不是我的分支页面，先看一眼确定一下哦"
+        );
         return;
       }
-      const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/branches?filter=my&page=1&per_page=50`
+      const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/branches?filter=my&page=1&per_page=50`;
       const response = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
           {
@@ -597,23 +765,6 @@ class GitlabService {
     this.fetchCommits(firstDay, lastDay, "get-current-week-commit-list-btn");
   };
   /**
-   * 设置按钮加载状态
-   */
-  setButtonLoading = (buttonId, loading) => {
-    const btn = document.getElementById(buttonId);
-    if (btn) {
-      btn.disabled = loading;
-      if (loading) {
-        btn.textContent = "加载中...";
-      } else {
-        const originalText = btn.getAttribute("data-original-text");
-        if (originalText) {
-          btn.textContent = originalText;
-        }
-      }
-    }
-  };
-  /**
    * 获取指定日期范围的commit列表
    */
   fetchCommits = async (firstDay, lastDay, buttonId) => {
@@ -621,12 +772,12 @@ class GitlabService {
     if (btn && !btn.getAttribute("data-original-text")) {
       btn.setAttribute("data-original-text", btn.textContent);
     }
-    this.setButtonLoading(buttonId, true);
+    this.commonHelper.setButtonLoading(buttonId, true);
     // 校验邮箱和项目
     const { email, project } = await this.userInfoService.getUserInfo();
     if (!email || !project) {
       this.commonHelper.showMessage("请先配置邮箱和项目");
-      this.setButtonLoading(buttonId, false);
+      this.commonHelper.setButtonLoading(buttonId, false);
       return;
     }
     // 获取并重置显示区域
@@ -644,7 +795,7 @@ class GitlabService {
         "devops",
       ]);
       if (!isInWhiteList) {
-        this.setButtonLoading(buttonId, false);
+        this.commonHelper.setButtonLoading(buttonId, false);
         return;
       }
       const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/commits?commit_id=&keyword=&committer_name=${email}&author_name=&start_date=${firstDay}&end_date=${lastDay}&count=0&ref=heads%2Fuat&path=&page=1&per_page=200&scope=include_refs`;
@@ -680,7 +831,7 @@ class GitlabService {
         if (commitList.length === 0) {
           this.commonHelper.showMessage("该时间段内没有找到提交记录");
           if (outputDiv) outputDiv.textContent = "该时间段内没有找到提交记录。";
-          this.setButtonLoading(buttonId, false);
+          this.commonHelper.setButtonLoading(buttonId, false);
           return;
         }
         const { geminiKey, prompt } = await this.userInfoService.getUserInfo();
@@ -707,7 +858,7 @@ class GitlabService {
                 "日报生成完成，点击复制",
                 "success"
               );
-              this.setButtonLoading(buttonId, false);
+              this.commonHelper.setButtonLoading(buttonId, false);
               // 显示复制按钮
               if (copyBtn) {
                 copyBtn.style.display = "block";
@@ -724,7 +875,7 @@ class GitlabService {
                 outputDiv.textContent += `\n\n[错误]: ${errorMessage}`;
                 outputDiv.style.color = "red";
               }
-              this.setButtonLoading(buttonId, false);
+              this.commonHelper.setButtonLoading(buttonId, false);
             }
           );
         } else {
@@ -737,17 +888,109 @@ class GitlabService {
             "success"
           );
         }
-        this.setButtonLoading(buttonId, false);
+        this.commonHelper.setButtonLoading(buttonId, false);
       } else {
         this.commonHelper.showMessage(
           response?.message || "获取Commit失败，刷新页面后重试"
         );
-        this.setButtonLoading(buttonId, false);
+        this.commonHelper.setButtonLoading(buttonId, false);
       }
     } catch (error) {
       this.commonHelper.showMessage("执行异常: 刷新页面后重试");
-      this.setButtonLoading(buttonId, false);
+      this.commonHelper.setButtonLoading(buttonId, false);
     }
+  };
+}
+class PipelineService {
+  constructor() {
+    this.commonHelper = new CommonHelper();
+    this.pipelineCommonConfig = {
+      params: {
+        APP_VERSION: "1.12.0",
+        skip: "1",
+      },
+    };
+    this.pipelineConfig = {
+      cost: {
+        gray: {
+          branch: "uat",
+          pipelineConfId: 4573,
+        },
+        uat: {
+          branch: "stable-uat",
+          pipelineConfId: 876,
+        },
+      },
+      public: {
+        gray: {
+          branch: "uat",
+          pipelineConfId: 4577,
+        },
+        uat: {
+          branch: "stable-uat",
+          pipelineConfId: 874,
+        },
+      },
+      target: {
+        gray: {
+          branch: "uat",
+          pipelineConfId: 4569,
+        },
+        uat: {
+          branch: "stable-uat",
+          pipelineConfId: 877,
+        },
+      },
+      income: {
+        gray: {
+          branch: "uat",
+          pipelineConfId: 4566,
+        },
+        uat: {
+          branch: "stable-uat",
+          pipelineConfId: 873,
+        },
+      },
+    };
+  }
+
+  runPipeline = async (type, branch, buttonId) => {
+    this.commonHelper.setButtonLoading(buttonId, true);
+    const baseParams = this.pipelineConfig[type][branch];
+    const { isInWhiteList } = await this.commonHelper.validateDomain([
+      "devops",
+    ]);
+    if (!isInWhiteList) {
+      this.commonHelper.setButtonLoading(buttonId, false);
+      return;
+    }
+    const response = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(
+        {
+          action: "runPipeline",
+          data: {
+            baseParams: {
+              ...baseParams,
+              params: this.pipelineCommonConfig.params,
+            },
+          },
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          resolve(response);
+        }
+      );
+    });
+    if (response && response.code === 0) {
+      this.commonHelper.showMessage("运行流水线成功", "success");
+      this.commonHelper.closeWindow();
+    } else {
+      this.commonHelper.showMessage("运行流水线失败");
+    }
+    this.commonHelper.setButtonLoading(buttonId, false);
   };
 }
 class DcsService {
@@ -958,4 +1201,7 @@ class GeminiService {
 const coreController = new CoreController();
 document.addEventListener("DOMContentLoaded", () => {
   coreController.init();
+});
+window.addEventListener("beforeunload", () => {
+  coreController.removeEventListener();
 });

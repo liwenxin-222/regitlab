@@ -164,6 +164,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       "getPullRequestList",
       "getMyBranches",
       "clearBranches",
+      "runPipeline"
     ].includes(request.action)
   ) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

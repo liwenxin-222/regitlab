@@ -32,6 +32,20 @@ class UtilsService {
   customGitlabDelete = async (url, callback, args) => {
     await this.customGitlabFetch(url, callback, args, "DELETE");
   };
+  commonFetch = async (url, options = {}) => {
+    const { method, body, referrer, mode, credentials, headers } = options;
+    const response = await fetch(url, {
+      referrer: referrer || window.location.href,
+      body: body || null,
+      method: method || "GET",
+      mode: mode || "cors",
+      credentials: credentials || "include",
+      headers: headers || {},
+    });
+    const resp = await response.json();
+    const result = resp?.data ? resp?.data : resp || null;
+    return result;
+  };
   createPullRequest = async (title) => {
     // 自动填写标题
     const input = document.querySelector(
@@ -92,15 +106,90 @@ const handle = {
     try {
       for (const branch of branches) {
         const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/branches/${branch}`;
-        await utilsService.customGitlabDelete(
-          url,
-          () => {},
-          { sendResponse: null }
-        );
+        await utilsService.customGitlabDelete(url, () => {}, {
+          sendResponse: null,
+        });
       }
       utilsService.sendSuccessResponse({ sendResponse });
     } catch (error) {
       utilsService.sendErrorResponse({ sendResponse });
+    }
+  },
+  // 运行pipeline
+  runPipeline: async (request, _, sendResponse) => {
+    try {
+      const { baseParams } = request.data;
+      const { branch, pipelineConfId, params } = baseParams;
+      const referrer =
+        "https://devops.cscec.com/osc/_ipipe/new-ipipe/pipelines/list?viewId=FAVORITE";
+      // 获取pipeline信息
+      const piplineInfo = await utilsService.commonFetch(
+        `https://devops.cscec.com/osc/_ipipe/ipipe/pipeline/rest/v4/pipelines/${pipelineConfId}?encryptParams=false`,
+        { referrer }
+      );
+      const materialSourcePipelineId = piplineInfo?.watchers?.find(
+        (watcher) => watcher.pipelineConfId === pipelineConfId
+      )?.materialSourcePipelineId;
+      if (!materialSourcePipelineId) {
+        utilsService.sendErrorResponse({
+          sendResponse,
+          message: "获取pipeline信息失败",
+        });
+        return true;
+      }
+      // 获取commit列表
+      const commitList = await utilsService.commonFetch(
+        `https://devops.cscec.com/osc/_ipipe/ipipe/pipeline/rest/v1/pipeline-sources/branches/commits?branch=${branch}&materialSourcePipelineId=${materialSourcePipelineId}&_offset=0&_limit=1`,
+        { referrer }
+      );
+      const commit = commitList[0];
+      const materialId = commit?.materialId;
+      if (!materialId) {
+        utilsService.sendErrorResponse({
+          sendResponse,
+          message: "获取materialId失败",
+        });
+        return true;
+      }
+      // 运行pipeline
+      const queryParams = {
+        pipelineConfId,
+        params,
+        materialAndPipelineSourceRefs: [
+          {
+            materialId,
+            materialSourcePipelineId,
+            beJoinJobRun: true,
+          },
+        ],
+      };
+      const result = await utilsService.commonFetch(
+        `https://devops.cscec.com/osc/_ipipe/ipipe/pipeline/rest/v4/pipeline-builds`,
+        {
+          referrer,
+          method: "POST",
+          body: JSON.stringify(queryParams),
+          headers: {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "xly_enterprise": "osc",
+            "xly_project": "_ipipe"
+          },
+        }
+      );
+      if (("" + result)?.includes("true")) {
+        utilsService.sendSuccessResponse({ sendResponse });
+      } else {
+        utilsService.sendErrorResponse({
+          sendResponse,
+          message: "运行pipeline失败",
+        });
+      }
+    } catch (error) {
+      utilsService.sendErrorResponse({
+        sendResponse,
+        message: "运行pipeline失败",
+      });
     }
   },
 };
