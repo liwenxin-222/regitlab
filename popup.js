@@ -95,6 +95,14 @@ class CoreController {
         this.gitlabService.autoCreatePullRequest
       );
     }
+    // 清空我的分支按钮
+    const clearMyBranchesBtn = document.getElementById("clear-my-branches-btn");
+    if (clearMyBranchesBtn) {
+      clearMyBranchesBtn.addEventListener(
+        "click",
+        this.gitlabService.clearMyBranches
+      );
+    }
     // 设置页面开关按钮
     const settingsIcon = document.getElementById("settings-icon");
     const settingsPanel = document.getElementById("settings-panel");
@@ -312,6 +320,14 @@ class CommonHelper {
       this.showMessage("复制失败，插件需要聚焦状态才能复制");
     }
   };
+  /**
+   * 刷新页面
+   */
+  reloadPage = async () => {
+    const tab = await this.getCurrentTab();
+    if (!tab) return;
+    await chrome.tabs.reload(tab.id);
+  };
 }
 class UrlButtonManager {
   constructor() {
@@ -442,6 +458,79 @@ class GitlabService {
     this.userInfoService = new UserInfoService();
     this.geminiService = new GeminiService();
   }
+  /**
+   * 清空我的分支
+   */
+  clearMyBranches = async () => {
+    try {
+      const { isInWhiteList, tab } = await this.commonHelper.validateDomain([
+        "devops",
+      ]);
+      if (!isInWhiteList) return;
+      const { email, project } = await this.userInfoService.getUserInfo();
+      if (!email || !project) {
+        this.commonHelper.showMessage("请先配置邮箱和项目");
+        return;
+      }
+      if (
+        !tab.url?.includes(
+          `https://devops.cscec.com/osc/_source/osc/${project}/-/branches`
+        )
+      ) {
+        this.commonHelper.showMessage("当前页面不是我的分支页面，先看一眼确定一下哦");
+        return;
+      }
+      const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/branches?filter=my&page=1&per_page=50`
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            action: "getMyBranches",
+            data: { url },
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+              return;
+            }
+            resolve(response);
+          }
+        );
+      });
+      let branches = [];
+      if (response && response.code === 0 && response.data) {
+        const lists = response.data?.list || [];
+        branches = lists.map((item) => item?.name).filter(Boolean);
+        if (branches.length === 0) {
+          this.commonHelper.showMessage("我的分支列表为空");
+          return;
+        }
+      }
+      const deleteResponse = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          {
+            action: "clearBranches",
+            data: { branches: branches, project: project },
+          },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+              return;
+            }
+            resolve(response);
+          }
+        );
+      });
+      if (deleteResponse && deleteResponse.code === 0) {
+        this.commonHelper.showMessage("清空我的分支成功", "success");
+        this.commonHelper.reloadPage();
+      } else {
+        this.commonHelper.showMessage("清空我的分支失败");
+      }
+      this.commonHelper.closeWindow();
+    } catch (error) {
+      this.commonHelper.showMessage("执行异常: 刷新页面后重试");
+    }
+  };
   /**
    * 自动填写标题并创建Pull Request
    */

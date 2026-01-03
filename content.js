@@ -9,12 +9,12 @@ class UtilsService {
   sendSuccessResponse = (args, result = null) => {
     args.sendResponse({ code: 0, message: this.SUCCESS_MESSAGE, data: result });
   };
-  customGitlabFetch = async (url, callback, args) => {
+  customGitlabFetch = async (url, callback, args, method = "GET") => {
     try {
       const response = await fetch(url, {
         referrer: window.location.href,
         body: null,
-        method: "GET",
+        method,
         mode: "cors",
         credentials: "include",
       });
@@ -22,8 +22,15 @@ class UtilsService {
       const result = resp?.data ? resp?.data : resp || null;
       callback(args, result);
     } catch (error) {
-      this.sendErrorResponse(args);
+      if (args.sendResponse) {
+        this.sendErrorResponse(args);
+      } else {
+        throw error;
+      }
     }
+  };
+  customGitlabDelete = async (url, callback, args) => {
+    await this.customGitlabFetch(url, callback, args, "DELETE");
   };
   createPullRequest = async (title) => {
     // 自动填写标题
@@ -63,7 +70,38 @@ const handle = {
     );
   },
   getCommitList: (request, _, sendResponse) => {
-    utilsService.customGitlabFetch(request.data.url, utilsService.sendSuccessResponse, { sendResponse });
+    utilsService.customGitlabFetch(
+      request.data.url,
+      utilsService.sendSuccessResponse,
+      { sendResponse }
+    );
+  },
+  getMyBranches: (request, _, sendResponse) => {
+    utilsService.customGitlabFetch(
+      request.data.url,
+      utilsService.sendSuccessResponse,
+      { sendResponse }
+    );
+  },
+  clearBranches: async (request, _, sendResponse) => {
+    const { branches = [], project } = request.data;
+    if (branches.length === 0 || !project) {
+      utilsService.sendErrorResponse({ sendResponse });
+      return true;
+    }
+    try {
+      for (const branch of branches) {
+        const url = `https://devops.cscec.com/api/code/api/osc/${project}/-/branches/${branch}`;
+        await utilsService.customGitlabDelete(
+          url,
+          () => {},
+          { sendResponse: null }
+        );
+      }
+      utilsService.sendSuccessResponse({ sendResponse });
+    } catch (error) {
+      utilsService.sendErrorResponse({ sendResponse });
+    }
   },
 };
 
