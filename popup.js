@@ -602,11 +602,15 @@ class CommonHelper {
     if (btn) {
       btn.disabled = loading;
       if (loading) {
-        btn.textContent = "加载中...";
+        if (!btn.querySelector(".loading-spinner")) {
+          const spinner = document.createElement("span");
+          spinner.className = "loading-spinner";
+          btn.insertBefore(spinner, btn.firstChild);
+        }
       } else {
-        const originalText = btn.getAttribute("data-original-text");
-        if (originalText) {
-          btn.textContent = originalText;
+        const spinner = btn.querySelector(".loading-spinner");
+        if (spinner) {
+          spinner.remove();
         }
       }
     }
@@ -866,10 +870,6 @@ class GitlabService {
    */
   fetchCommits = async (firstDay, lastDay, buttonId, { tab, userInfo }) => {
     const { email, project } = userInfo || {};
-    const btn = document.getElementById(buttonId);
-    if (btn && !btn.getAttribute("data-original-text")) {
-      btn.setAttribute("data-original-text", btn.textContent);
-    }
     this.commonHelper.setButtonLoading(buttonId, true);
     // 获取并重置显示区域
     const outputDiv = document.getElementById("ai-report-output");

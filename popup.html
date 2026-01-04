@@ -128,10 +128,10 @@
       }
 
       .container {
-        padding: 16px;
+        padding: 12px 16px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
         padding-bottom: 20px;
         flex: 1;
         overflow-y: auto;
@@ -142,7 +142,7 @@
         background: var(--card-bg);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
-        padding: 16px;
+        padding: 12px 16px;
       }
 
       .section-title {
@@ -460,7 +460,7 @@
       }
 
       .settings-header {
-        padding: 16px 24px;
+        padding: 12px 24px;
         border-bottom: 1px solid #e5e7eb;
         display: flex;
         align-items: center;
@@ -496,10 +496,10 @@
       .settings-content {
         flex: 1;
         overflow-y: auto;
-        padding: 24px;
+        padding: 12px 16px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 12px;
       }
 
       .settings-content .card {
@@ -555,137 +555,138 @@
         color: var(--text-sub);
         margin-top: 4px;
       }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: currentColor;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .pipeline-btn .loading-spinner {
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .popup-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
     </style>
   </head>
   <body>
     <div id="message-container" class="message-container"></div>
-
-    <div class="header">
-      <div class="top-bar">
-        <div class="app-title"><span>🚀</span> gitLab协同工作</div>
-        <div class="actions-icon">
-          <div class="settings-icon icon-btn" id="settings-icon">
-            ⚙️
+    <div class="popup-container">
+      <div class="header">
+        <div class="top-bar">
+          <div class="app-title"><span>🚀</span> gitLab协同工作</div>
+          <div class="actions-icon">
+            <div class="settings-icon icon-btn" id="settings-icon">⚙️</div>
+            <div class="help-icon icon-btn">
+              <span>?</span>
+              <span class="tooltip"
+                >搜索状态时，输入1选择dev分支，输入2选择uat分支，输入3选择stable-uat分支，输入4选择stable分支</span
+              >
+            </div>
           </div>
-          <div class="help-icon icon-btn">
-            <span>?</span>
-            <span class="tooltip"
-              >搜索状态时，输入1选择dev分支，输入2选择uat分支，输入3选择stable-uat分支，输入4选择stable分支</span
-            >
+        </div>
+        <div id="url-buttons-container" class="chip-container"></div>
+      </div>
+  
+      <div class="container">
+        <div class="card">
+          <div class="section-title">DCS-UAT-GRAY Tools</div>
+          <div class="tool-grid">
+            <button id="get-user-btn" class="btn btn-outline">
+              🔍 $udp.getUser
+            </button>
           </div>
         </div>
-      </div>
-      <div id="url-buttons-container" class="chip-container"></div>
-    </div>
-
-    <div class="container">
-      <div class="card">
-        <div class="section-title">DCS-UAT-GRAY Tools</div>
-        <div class="tool-grid">
-          <button id="get-user-btn" class="btn btn-outline">
-            🔍 $udp.getUser
+  
+        <div class="card" id="ai-report-output-group" style="display: none">
+          <div class="section-title">生成结果</div>
+          <div id="ai-report-output" class="ai-report-output-container">
+            等待生成...
+          </div>
+          <button
+            id="copy-report-btn"
+            class="btn btn-success copy-btn"
+            style="display: none"
+          >
+            复制全部结果
           </button>
         </div>
-      </div>
-
-      <div class="card" id="ai-report-output-group" style="display: none">
-        <div class="section-title">生成结果</div>
-        <div id="ai-report-output" class="ai-report-output-container">
-          等待生成...
+  
+        <div class="card">
+          <div class="section-title">GitLab Workflow</div>
+          <div class="tool-grid">
+            <button id="auto-pull-title-btn" class="btn btn-primary">
+              ✨ 创建 Pull Request
+            </button>
+            <button id="auto-accept-pull-request-btn" class="btn btn-success">
+              ✅ 接受 Pull Request
+            </button>
+            <button id="get-current-week-commit-list-btn" class="btn btn-success">
+              📅 本周日报
+            </button>
+            <button id="get-last-week-commit-list-btn" class="btn btn-success">
+              ⏮ 上周日报
+            </button>
+            <button id="clear-my-branches-btn" class="btn btn-danger full-width">
+              🗑 清空我的分支
+            </button>
+          </div>
         </div>
-        <button
-          id="copy-report-btn"
-          class="btn btn-success copy-btn"
-          style="display: none"
-        >
-          复制全部结果
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="section-title">GitLab Workflow</div>
-        <div class="tool-grid">
-          <button id="auto-pull-title-btn" class="btn btn-primary">
-            ✨ 创建 Pull Request
-          </button>
-          <button id="auto-accept-pull-request-btn" class="btn btn-success">
-            ✅ 接受 Pull Request
-          </button>
-          <button id="get-current-week-commit-list-btn" class="btn btn-success">
-            📅 本周日报
-          </button>
-          <button id="get-last-week-commit-list-btn" class="btn btn-success">
-            ⏮ 上周日报
-          </button>
-          <button id="clear-my-branches-btn" class="btn btn-danger full-width">
-            🗑 清空我的分支
-          </button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">部署流水线 (Deploy)</div>
-        <div class="pipeline-grid">
-          <button
-            id="run-pipeline-btn-cost-gray"
-            class="pipeline-btn gray"
-            data-original-text="成本gray"
-          >
-            成本 <span class="tag">GRAY</span>
-          </button>
-          <button
-            id="run-pipeline-btn-cost-uat"
-            class="pipeline-btn uat"
-            data-original-text="成本uat"
-          >
-            成本 <span class="tag">UAT</span>
-          </button>
-          <button
-            id="run-pipeline-btn-public-gray"
-            class="pipeline-btn gray"
-            data-original-text="公共gray"
-          >
-            公共 <span class="tag">GRAY</span>
-          </button>
-          <button
-            id="run-pipeline-btn-public-uat"
-            class="pipeline-btn uat"
-            data-original-text="公共uat"
-          >
-            公共 <span class="tag">UAT</span>
-          </button>
-          <button
-            id="run-pipeline-btn-target-gray"
-            class="pipeline-btn gray"
-            data-original-text="目标gray"
-          >
-            目标 <span class="tag">GRAY</span>
-          </button>
-          <button
-            id="run-pipeline-btn-target-uat"
-            class="pipeline-btn uat"
-            data-original-text="目标uat"
-          >
-            目标 <span class="tag">UAT</span>
-          </button>
-          <button
-            id="run-pipeline-btn-income-gray"
-            class="pipeline-btn gray"
-            data-original-text="收入gray"
-          >
-            收入 <span class="tag">GRAY</span>
-          </button>
-          <button
-            id="run-pipeline-btn-income-uat"
-            class="pipeline-btn uat"
-            data-original-text="收入uat"
-          >
-            收入 <span class="tag">UAT</span>
-          </button>
+  
+        <div class="card">
+          <div class="section-title">部署流水线 (Deploy)</div>
+          <div class="pipeline-grid">
+            <button id="run-pipeline-btn-cost-gray" class="pipeline-btn gray">
+              成本 <span class="tag">GRAY</span>
+            </button>
+            <button id="run-pipeline-btn-cost-uat" class="pipeline-btn uat">
+              成本 <span class="tag">UAT</span>
+            </button>
+            <button id="run-pipeline-btn-public-gray" class="pipeline-btn gray">
+              公共 <span class="tag">GRAY</span>
+            </button>
+            <button id="run-pipeline-btn-public-uat" class="pipeline-btn uat">
+              公共 <span class="tag">UAT</span>
+            </button>
+            <button id="run-pipeline-btn-target-gray" class="pipeline-btn gray">
+              目标 <span class="tag">GRAY</span>
+            </button>
+            <button id="run-pipeline-btn-target-uat" class="pipeline-btn uat">
+              目标 <span class="tag">UAT</span>
+            </button>
+            <button id="run-pipeline-btn-income-gray" class="pipeline-btn gray">
+              收入 <span class="tag">GRAY</span>
+            </button>
+            <button id="run-pipeline-btn-income-uat" class="pipeline-btn uat">
+              收入 <span class="tag">UAT</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
-
     <div class="settings-panel" id="settings-panel">
       <div class="settings-header">
         <span>设置 (Settings)</span>
