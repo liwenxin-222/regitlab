@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>regitlab 隐私权政策</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .last-updated {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>regitlab 隐私权政策</h1>
+    <p class="last-updated">最后更新日期：2026年1月</p>
+
+    <h2>1. 概述</h2>
+    <p>regitlab（以下简称"本插件"）是一款用于增强GitLab工作流程的浏览器扩展程序。本隐私权政策说明了我们如何收集、使用和保护您的信息。</p>
+
+    <h2>2. 收集的信息</h2>
+    <p>本插件收集以下信息，所有信息均存储在您的浏览器本地：</p>
+    <ul>
+        <li><strong>邮箱地址</strong>：用于在GitLab中查询您的提交记录</li>
+        <li><strong>项目名称</strong>：用于执行GitLab相关操作（创建Pull Request、查询分支等）</li>
+        <li><strong>Gemini API Key</strong>：用于调用Gemini API生成周报日志（由您自行提供）</li>
+        <li><strong>提示词模板</strong>：用于生成周报的提示词配置</li>
+        <li><strong>自定义URL按钮</strong>：您添加的快速跳转链接</li>
+    </ul>
+    <p><strong>重要说明</strong>：本插件还会临时读取页面中的用户信息（通过window.$udp.getUser()），但这些信息仅用于复制到剪贴板，不会存储或传输。</p>
+
+    <h2>3. 数据存储</h2>
+    <p>所有数据均使用Chrome浏览器的本地存储（chrome.storage.local）保存在您的设备上。数据不会上传到任何服务器，包括插件开发者的服务器。</p>
+
+    <h2>4. 数据使用</h2>
+    <p>收集的数据仅用于以下目的：</p>
+    <ul>
+        <li>自动创建GitLab Pull Request</li>
+        <li>查询和显示您的GitLab提交记录</li>
+        <li>生成周报日志（通过您提供的Gemini API Key调用Gemini服务）</li>
+        <li>执行GitLab分支管理操作</li>
+        <li>运行CI/CD流水线</li>
+    </ul>
+
+    <h2>5. 数据共享</h2>
+    <p>本插件不会向任何第三方（包括插件开发者）共享、出售或传输您的数据。</p>
+    <p>当您使用Gemini API生成周报功能时，您的提交记录和提示词会发送到Gemini API服务（gemini-api.getan.edu.kg），这是您主动使用该功能时的行为，使用的是您自己提供的API Key。</p>
+
+    <h2>6. 网络访问</h2>
+    <p>本插件仅在以下域名下工作：</p>
+    <ul>
+        <li>https://devops.cscec.com/*</li>
+        <li>https://dcs-uat-gray.cscec.com/*</li>
+        <li>https://gemini-api.getan.edu.kg/*（仅在使用Gemini功能时）</li>
+    </ul>
+    <p>本插件不会访问其他网站，也不会收集或传输任何数据到插件开发者的服务器。</p>
+
+    <h2>7. 数据安全</h2>
+    <p>所有数据存储在您的浏览器本地，由Chrome浏览器提供安全保护。我们建议您：</p>
+    <ul>
+        <li>妥善保管您的Gemini API Key</li>
+        <li>定期检查您的GitLab账户安全设置</li>
+        <li>卸载插件时，本地存储的数据会被清除</li>
+    </ul>
+
+    <h2>8. 您的权利</h2>
+    <p>您可以随时：</p>
+    <ul>
+        <li>在插件设置中查看、修改或删除您存储的数据</li>
+        <li>卸载插件以删除所有本地存储的数据</li>
+        <li>通过Chrome浏览器的扩展程序管理页面清除扩展程序数据</li>
+    </ul>
+
+    <h2>9. 第三方服务</h2>
+    <p>本插件使用以下第三方服务：</p>
+    <ul>
+        <li><strong>Gemini API</strong>：当您使用周报生成功能时，数据会发送到Gemini API服务。请参考Google的隐私政策了解Gemini服务的数据处理方式。</li>
+    </ul>
+
+    <h2>10. 儿童隐私</h2>
+    <p>本插件不面向13岁以下的儿童。我们不会故意收集儿童的个人信息。</p>
+
+    <h2>11. 政策变更</h2>
+    <p>我们可能会不时更新本隐私权政策。重大变更将在插件更新时通知您。继续使用本插件即表示您接受更新后的政策。</p>
+
+    <h2>12. 联系我们</h2>
+    <p>如果您对本隐私权政策有任何疑问，请通过以下方式联系我们：</p>
+    <p>Email: cutecode@sina.com</p>
+
+    <hr>
+    <p style="text-align: center; color: #7f8c8d; font-size: 12px; margin-top: 40px;">
+        © 2026 regitlab. 保留所有权利。
+    </p>
+</body>
+</html>
