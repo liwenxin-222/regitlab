@@ -1,7 +1,7 @@
 class CoreController {
   constructor() {
     this.userInfoService = new UserInfoService();
-    this.urlButtonManager = new UrlButtonManager();
+    this.urlButtonService = new UrlButtonService();
     this.dcsService = new DcsService();
     this.gitlabService = new GitlabService();
     this.commonHelper = new CommonHelper();
@@ -9,7 +9,7 @@ class CoreController {
     this.eventHandlers = [];
   }
   init = () => {
-    this.urlButtonManager.loadUrlButtons();
+    this.urlButtonService.loadUrlButtons();
     this.userInfoService.renderUserInfo();
     this.addEventListener();
   };
@@ -193,7 +193,7 @@ class CoreController {
     // 添加跳转按钮
     const addMenuButton = document.getElementById("add-menu-button");
     if (addMenuButton) {
-      const handler = this.wrapHandler(this.urlButtonManager.addUrlButton, []);
+      const handler = this.wrapHandler(this.urlButtonService.addUrlButton, []);
       addMenuButton.addEventListener("click", handler);
       this.eventHandlers.push({
         element: addMenuButton,
@@ -670,7 +670,7 @@ class CommonHelper {
     this.closeWindow();
   };
 }
-class UrlButtonManager {
+class UrlButtonService {
   constructor() {
     this.commonHelper = new CommonHelper();
   }

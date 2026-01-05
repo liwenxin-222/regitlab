@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "regitlab",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "gitlab分支快速选择、创建pull Request自动化、一键生成日志",
   "permissions": [
     "declarativeNetRequest",
@@ -31,8 +31,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://devops.cscec.com/*",
-        "https://dcs-uat-gray.cscec.com/*"
+        "https://devops.cscec.com/*"
       ],
       "js": ["content.js"]
     }
@@ -41,8 +40,7 @@
     {
       "resources": ["replacement/*"],
       "matches": [
-        "https://devops.cscec.com/*",
-        "https://dcs-uat-gray.cscec.com/*"
+        "https://devops.cscec.com/*"
       ]
     }
   ]
