@@ -160,6 +160,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await injectContentScriptsToAllTabs();
     await initLocalStorage();
   }
+  if (details.reason === "install") {
+    chrome.tabs.create({
+      url: "https://static.getan.edu.kg/chrome-extension-install"
+    });
+    chrome.runtime.setUninstallURL("https://static.getan.edu.kg/chrome-extension-uninstall");
+  }
 });
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (
