@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静态资源导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #3498db;
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .card-title {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .card-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .card-footer {
+            margin-top: 20px;
+            color: #3498db;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .card:hover .card-footer {
+            color: #2980b9;
+        }
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>regitlab 导航</h1>
+        <p class="subtitle">选择您需要的功能</p>
+        
+        <div class="cards-grid">
+            <a href="chrome-extension-install.html" class="card">
+                <span class="card-icon">📖</span>
+                <h2 class="card-title">使用指南</h2>
+                <p class="card-description">了解 regitlab 插件的安装、配置和使用方法，包括所有主要功能的详细说明。</p>
+                <div class="card-footer">查看指南 →</div>
+            </a>
+
+            <a href="chrome-extension-uninstall.html" class="card">
+                <span class="card-icon">👋</span>
+                <h2 class="card-title">卸载说明</h2>
+                <p class="card-description">了解如何卸载 regitlab 插件，以及卸载后的数据清理说明和联系方式。</p>
+                <div class="card-footer">查看说明 →</div>
+            </a>
+
+            <a href="privacy-policy.html" class="card">
+                <span class="card-icon">🔒</span>
+                <h2 class="card-title">隐私权政策</h2>
+                <p class="card-description">了解 regitlab 如何收集、使用和保护您的个人信息，以及数据存储方式。</p>
+                <div class="card-footer">查看政策 →</div>
+            </a>
+
+            <a href="download-extension.html" class="card">
+                <span class="card-icon">⬇️</span>
+                <h2 class="card-title">插件下载器</h2>
+                <p class="card-description">通过插件 ID 快速下载 Chrome 扩展程序的 .crx 文件，方便离线安装。</p>
+                <div class="card-footer">开始下载 →</div>
+            </a>
+
+            <a href="screenshot.html" class="card">
+                <span class="card-icon">📸</span>
+                <h2 class="card-title">演示页面</h2>
+                <p class="card-description">用于演示和截图的页面，展示 regitlab 插件的界面和功能，方便制作文档和宣传材料。</p>
+                <div class="card-footer">查看演示 →</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
