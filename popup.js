@@ -162,6 +162,25 @@ class CoreController {
         handler,
       });
     }
+    // 监听清空排除分支输入变化
+    const clearExcludeBranchesTextarea = document.getElementById(
+      "clear-exclude-branches-textarea"
+    );
+    if (clearExcludeBranchesTextarea) {
+      const handler = () => {
+        this.commonHelper.updateLocalStorage(
+          "userInfo",
+          "clearExcludeBranches",
+          clearExcludeBranchesTextarea.value.trim()
+        );
+      };
+      clearExcludeBranchesTextarea.addEventListener("input", handler);
+      this.eventHandlers.push({
+        element: clearExcludeBranchesTextarea,
+        event: "input",
+        handler,
+      });
+    }
     // 设置页面开关按钮
     const settingsIcon = document.getElementById("settings-icon");
     const settingsPanel = document.getElementById("settings-panel");
@@ -243,7 +262,7 @@ class CoreController {
       const handler = this.wrapHandler(
         this.gitlabService.autoCreatePullRequest,
         ["devops"],
-        ["gitlab"]
+        []
       );
       autoPullTitleBtn.addEventListener("click", handler);
       this.eventHandlers.push({
@@ -260,7 +279,7 @@ class CoreController {
       const handler = this.wrapHandler(
         this.gitlabService.autoAcceptPullRequest,
         ["devops"],
-        ["gitlab"]
+        []
       );
       autoAcceptPullRequestBtn.addEventListener("click", handler);
       this.eventHandlers.push({
@@ -275,7 +294,7 @@ class CoreController {
       const handler = this.wrapHandler(
         this.gitlabService.clearMyBranches,
         ["devops"],
-        ["gitlab"]
+        []
       );
       clearMyBranchesBtn.addEventListener("click", handler);
       this.eventHandlers.push({
@@ -669,6 +688,45 @@ class CommonHelper {
     await chrome.tabs.update(tab.id, { url: url });
     this.closeWindow();
   };
+  /**
+   * 验证URL格式
+   * @param {string} page - 页面名称
+   * @param {string} url - 要验证的URL
+   * @returns {string} - 项目路径
+   */
+  vaildUrlFormat = (page, url) => {
+    switch (page) {
+      case "my_branches":
+        const reg1 =
+          /^https:\/\/devops\.cscec\.com\/osc\/_source\/osc\/([^\/]+\/[^\/]+)\/-\/branches$/;
+        const matchResult1 = url.match(reg1);
+        if (matchResult1) {
+          return matchResult1[1] || "";
+        } else {
+          return "";
+        }
+      case "create_pull_request":
+        const reg2 =
+          /^https:\/\/devops\.cscec\.com\/osc\/_source\/osc\/([^\/]+\/[^\/]+)\/-\/pull_requests\/new\?.*/;
+        const matchResult2 = url.match(reg2);
+        if (matchResult2) {
+          return matchResult2[1] || "";
+        } else {
+          return "";
+        }
+      case "accept_pull_request":
+        const reg3 =
+          /^https:\/\/devops\.cscec\.com\/osc\/_source\/osc\/([^\/]+\/[^\/]+)\/-\/pull_requests\/\d+$/;
+        const matchResult3 = url.match(reg3);
+        if (matchResult3) {
+          return matchResult3[1] || "";
+        } else {
+          return "";
+        }
+      default:
+        return "";
+    }
+  };
 }
 class UrlButtonService {
   constructor() {
@@ -799,33 +857,50 @@ class GitlabService {
   /**
    * 清空我的分支
    */
-  clearMyBranches = async ({ tab, userInfo }) => {
-    if (
-      !tab.url?.includes(
-        `${this.commonHelper.gitlabDomain}/osc/_source/osc/${userInfo.project}/-/branches`
-      )
-    ) {
+  clearMyBranches = async ({ tab }) => {
+    const project = this.commonHelper.vaildUrlFormat("my_branches", tab.url);
+    if (!project) {
       this.commonHelper.showMessage(
-        "当前页面不是我的分支页面，先看一眼确定一下哦"
+        "不是我的分支页面，确定是否全部清空我的分支"
       );
       return;
     }
     const response = await chrome.runtime.sendMessage({
       action: "getMyBranches",
-      data: { project: userInfo.project },
+      data: { project },
     });
     let branches = [];
     if (response && response.code === 0 && response.data) {
       const lists = response.data?.list || [];
       branches = lists.map((item) => item?.name).filter(Boolean);
-      if (branches.length === 0) {
-        this.commonHelper.showMessage("我的分支列表为空");
+    }
+    const clearExcludeBranches = await this.commonHelper.getLocalStorage(
+      "userInfo",
+      "clearExcludeBranches"
+    );
+    if (clearExcludeBranches) {
+      try {
+        const excludeBranches = clearExcludeBranches
+          .split(",")
+          .map((item) => item.trim())
+          ?.filter(Boolean);
+        if (excludeBranches.length) {
+          branches = branches.filter(
+            (branch) => !excludeBranches.includes(branch)
+          );
+        }
+      } catch (error) {
+        this.commonHelper.showMessage("配置填写错误，请检查");
         return;
       }
     }
+    if (branches.length === 0) {
+      this.commonHelper.showMessage("没有需要清空的分支");
+      return;
+    }
     const deleteResponse = await chrome.runtime.sendMessage({
       action: "clearBranches",
-      data: { branches: branches, project: userInfo.project },
+      data: { branches: branches, project },
     });
     if (deleteResponse && deleteResponse.code === 0) {
       this.commonHelper.showMessage("清空我的分支成功", "success");
@@ -839,11 +914,11 @@ class GitlabService {
    * 自动填写标题并创建Pull Request
    */
   autoCreatePullRequest = async ({ tab, userInfo }) => {
-    if (
-      !tab.url?.includes(
-        `${this.commonHelper.gitlabDomain}/osc/_source/osc/${userInfo.project}/-/pull_requests/new?source_branch`
-      )
-    ) {
+    const project = this.commonHelper.vaildUrlFormat(
+      "create_pull_request",
+      tab.url
+    );
+    if (!project) {
       this.commonHelper.showMessage("当前页面不是创建Pull Request页面");
       return;
     }
@@ -851,7 +926,7 @@ class GitlabService {
     const response = await chrome.runtime.sendMessage({
       action: "getPullRequestList",
       data: {
-        project: userInfo.project,
+        project,
         target_branch: params.target_branch,
         source_branch: params.source_branch,
       },
@@ -867,12 +942,12 @@ class GitlabService {
   /**
    * 自动接受Pull Request
    */
-  autoAcceptPullRequest = async ({ tab, userInfo }) => {
-    if (
-      !tab.url?.includes(
-        `${this.commonHelper.gitlabDomain}/osc/_source/osc/${userInfo.project}/-/pull_requests/`
-      )
-    ) {
+  autoAcceptPullRequest = async ({ tab }) => {
+    const project = this.commonHelper.vaildUrlFormat(
+      "accept_pull_request",
+      tab.url
+    );
+    if (!project) {
       this.commonHelper.showMessage("当前页面不是接受Pull Request页面");
       return;
     }
@@ -884,7 +959,7 @@ class GitlabService {
       // 更新当前页面跳转到我的分支页面
       setTimeout(async () => {
         await this.commonHelper.updateCurrentTabUrl(
-          `${this.commonHelper.gitlabDomain}/osc/_source/osc/${userInfo.project}/-/cherry_pick/new`
+          `${this.commonHelper.gitlabDomain}/osc/_source/osc/${project}/-/cherry_pick/new`
         );
       }, 1000);
     } else {
@@ -1139,8 +1214,15 @@ class UserInfoService {
    * 渲染用户信息
    */
   renderUserInfo = async () => {
-    const { email, project, geminiKey, prompt, editorType, devProjectPath } =
-      await this.getUserInfo();
+    const {
+      email,
+      project,
+      geminiKey,
+      prompt,
+      editorType,
+      devProjectPath,
+      clearExcludeBranches,
+    } = await this.getUserInfo();
     const emailInput = document.getElementById("email-input");
     const projectInput = document.getElementById("project-input");
     const geminiKeyInput = document.getElementById("gemini-key-input");
@@ -1148,6 +1230,9 @@ class UserInfoService {
     const editorTypeInput = document.getElementById("editor-type-input");
     const devProjectPathInput = document.getElementById(
       "dev-project-path-input"
+    );
+    const clearExcludeBranchesTextarea = document.getElementById(
+      "clear-exclude-branches-textarea"
     );
     if (emailInput && email) {
       emailInput.value = email;
@@ -1167,6 +1252,9 @@ class UserInfoService {
     if (devProjectPathInput && devProjectPath) {
       devProjectPathInput.value = devProjectPath;
     }
+    if (clearExcludeBranchesTextarea && clearExcludeBranches) {
+      clearExcludeBranchesTextarea.value = clearExcludeBranches;
+    }
   };
   /**
    * 获取用户信息
@@ -1174,9 +1262,24 @@ class UserInfoService {
    */
   getUserInfo = async () => {
     const result = await this.commonHelper.getLocalStorage("userInfo");
-    const { email, project, geminiKey, prompt, editorType, devProjectPath } =
-      result || {};
-    return { email, project, geminiKey, prompt, editorType, devProjectPath };
+    const {
+      email,
+      project,
+      geminiKey,
+      prompt,
+      editorType,
+      devProjectPath,
+      clearExcludeBranches,
+    } = result || {};
+    return {
+      email,
+      project,
+      geminiKey,
+      prompt,
+      editorType,
+      devProjectPath,
+      clearExcludeBranches,
+    };
   };
 }
 class GeminiService {

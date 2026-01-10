@@ -619,7 +619,7 @@
         </div>
         <div id="url-buttons-container" class="chip-container"></div>
       </div>
-  
+
       <div class="container">
         <div class="card">
           <div class="section-title">DCS-UAT-GRAY Tools</div>
@@ -629,7 +629,7 @@
             </button>
           </div>
         </div>
-  
+
         <div class="card" id="ai-report-output-group" style="display: none">
           <div class="section-title">生成结果</div>
           <div id="ai-report-output" class="ai-report-output-container">
@@ -643,7 +643,7 @@
             复制全部结果
           </button>
         </div>
-  
+
         <div class="card">
           <div class="section-title">GitLab Workflow</div>
           <div class="tool-grid">
@@ -653,18 +653,24 @@
             <button id="auto-accept-pull-request-btn" class="btn btn-success">
               ✅ 接受 Pull Request
             </button>
-            <button id="get-current-week-commit-list-btn" class="btn btn-success">
+            <button
+              id="get-current-week-commit-list-btn"
+              class="btn btn-success"
+            >
               📅 本周日报
             </button>
             <button id="get-last-week-commit-list-btn" class="btn btn-success">
               ⏮ 上周日报
             </button>
-            <button id="clear-my-branches-btn" class="btn btn-danger full-width">
+            <button
+              id="clear-my-branches-btn"
+              class="btn btn-danger full-width"
+            >
               🗑 清空我的分支
             </button>
           </div>
         </div>
-  
+
         <div class="card">
           <div class="section-title">部署流水线 (Deploy)</div>
           <div class="pipeline-grid">
@@ -718,31 +724,6 @@
       <div class="settings-content" spellcheck="false">
         <div class="card">
           <div class="card-header">
-            <span class="card-title">🦊 GitLab 配置</span>
-          </div>
-          <div class="form-group">
-            <label>GitLab 邮箱</label>
-            <input
-              type="text"
-              id="email-input"
-              placeholder="例如: yourname@company.com"
-              class="input-field"
-            />
-          </div>
-          <div class="form-group">
-            <label>项目路径 (Project Path)</label>
-            <input
-              type="text"
-              id="project-input"
-              placeholder="例如: cip-economic/cost-react-1"
-              class="input-field"
-            />
-            <div class="helper-text">请填写 Group/Project 格式的完整路径</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
             <span class="card-title">📝 编辑器配置</span>
           </div>
           <div class="form-group">
@@ -762,14 +743,55 @@
               placeholder="绝对路径: Mac移除前面斜杠，Win不做处理"
               class="input-field"
             />
-            <div class="helper-text">Win:<span>D:/project/common-react/src/app.tsx:454:0</span></div>
-            <div class="helper-text">Mac:<span>Users/username/project/common-react/src/app.tsx:454:0</span></div>
+            <div class="helper-text">
+              Win:<span>D:/project/common-react/src/app.tsx:454:0</span>
+            </div>
+            <div class="helper-text">
+              Mac:<span
+                >Users/username/project/common-react/src/app.tsx:454:0</span
+              >
+            </div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <span class="card-title">🤖 AI 助手配置 (Gemini)</span>
+            <span class="card-title">🦊 GitLab 配置</span>
+          </div>
+          <div class="form-group">
+            <label>清空我的分支排除分支</label>
+            <textarea
+              id="clear-exclude-branches-textarea"
+              placeholder="在此输入排除分支，使用英文逗号分隔，最多1000字"
+              rows="5"
+              maxlength="1000"
+              class="input-field"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🤖 AI 日报配置 (Gemini)</span>
+          </div>
+          <div class="form-group">
+            <label>GitLab 邮箱</label>
+            <input
+              type="text"
+              id="email-input"
+              placeholder="例如: yourname@company.com"
+              class="input-field"
+            />
+          </div>
+          <div class="form-group">
+            <label>常用项目路径 (Project Path)</label>
+            <input
+              type="text"
+              id="project-input"
+              placeholder="例如: cip-economic/cost-react-1"
+              class="input-field"
+            />
+            <div class="helper-text">请填写 Group/Project 格式的完整路径</div>
           </div>
           <div class="form-group">
             <label>Gemini API Key</label>
