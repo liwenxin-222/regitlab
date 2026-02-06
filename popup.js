@@ -1312,6 +1312,7 @@ class DcsService {
           } finally {
             document.body.removeChild(textarea);
           }
+          if(!_editorType || !_devProjectPath) return;
           // 创建临时链接元素并点击
           const link = document.createElement("a");
           link.href = `${_editorType}://file/${_devProjectPath}`;
