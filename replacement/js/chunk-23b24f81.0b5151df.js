@@ -559,13 +559,14 @@
 					var e = this;
 					if (!this.commitsLoading) {
 						t && (this.commitsList = []), this.commitsLoading = !0;
-						
+
 						if (document.querySelector('button[data-v-61b9d150]')) {
 							document.querySelector('button[data-v-61b9d150]').click();
 						}
 
-						const onlyMyself = localStorage.getItem("onlyMyselfCheckbox") === "true";
-						const filterMergeCommit = localStorage.getItem("filterMergeCommitCheckbox") !== "false";
+						// 优先从扩展配置获取，降级到 localStorage
+						const onlyMyself = window.__EXTENSION_CONFIG__?.onlyMyself ?? localStorage.getItem("onlyMyselfCheckbox") === "true";
+						const filterMergeCommit = window.__EXTENSION_CONFIG__?.filterMergeCommit !== undefined ? window.__EXTENSION_CONFIG__.filterMergeCommit : localStorage.getItem("filterMergeCommitCheckbox") !== "false";
 						const __currentUser = JSON.parse(localStorage.getItem("Parse/osc/currentUser"));
 						const __committer_name = __currentUser.email;
 						const __params = onlyMyself ? {page: this.page, per_page: 100, committer_name: __committer_name} : {page: this.page, per_page: 100};

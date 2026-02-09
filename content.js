@@ -265,29 +265,49 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 插件的配置对象（放在内容脚本的 window 上）
 window.__EXTENSION_CONFIG__ = {
-  autoCheckRowCount: 0
+  autoCheckRowCount: 0,
+  onlyMyself: false,
+  filterMergeCommit: true
 };
 
 // 发送配置到页面（通过 postMessage）
 function sendConfigToPage() {
   window.postMessage({
     type: '__EXTENSION_CONFIG_UPDATE__',
-    data: { autoCheckRowCount: window.__EXTENSION_CONFIG__.autoCheckRowCount }
+    data: {
+      autoCheckRowCount: window.__EXTENSION_CONFIG__.autoCheckRowCount,
+      onlyMyself: window.__EXTENSION_CONFIG__.onlyMyself,
+      filterMergeCommit: window.__EXTENSION_CONFIG__.filterMergeCommit
+    }
   }, '*');
 }
 
 // 初始化：从 storage 获取值
-chrome.storage.local.get(['autoCheckRowCount'], (result) => {
-  const value = result.autoCheckRowCount || 0;
-  window.__EXTENSION_CONFIG__.autoCheckRowCount = value;
+chrome.storage.local.get(['autoCheckRowCount', 'onlyMyself', 'filterMergeCommit'], (result) => {
+  window.__EXTENSION_CONFIG__.autoCheckRowCount = result.autoCheckRowCount || 0;
+  window.__EXTENSION_CONFIG__.onlyMyself = result.onlyMyself || false;
+  window.__EXTENSION_CONFIG__.filterMergeCommit = result.filterMergeCommit !== false; // 默认开启
   sendConfigToPage();
 });
 
 // 监听 storage 变化，实时更新配置
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName === 'local' && changes.autoCheckRowCount) {
-    const newValue = changes.autoCheckRowCount.newValue || 0;
-    window.__EXTENSION_CONFIG__.autoCheckRowCount = newValue;
-    sendConfigToPage();
+  if (areaName === 'local') {
+    let needUpdate = false;
+    if (changes.autoCheckRowCount) {
+      window.__EXTENSION_CONFIG__.autoCheckRowCount = changes.autoCheckRowCount.newValue || 0;
+      needUpdate = true;
+    }
+    if (changes.onlyMyself) {
+      window.__EXTENSION_CONFIG__.onlyMyself = changes.onlyMyself.newValue || false;
+      needUpdate = true;
+    }
+    if (changes.filterMergeCommit) {
+      window.__EXTENSION_CONFIG__.filterMergeCommit = changes.filterMergeCommit.newValue !== false;
+      needUpdate = true;
+    }
+    if (needUpdate) {
+      sendConfigToPage();
+    }
   }
 });
