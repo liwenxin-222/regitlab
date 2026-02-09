@@ -624,7 +624,19 @@
 											})), e.isScrollLoading = !1, e.$emit("afterGetList", s);
 											
 											// 获取配置的自动勾选行数，默认0表示不自动勾选
-											const autoCheckRowCount = parseInt(localStorage.getItem("autoCheckRowCount") || "0", 10);
+											// 从扩展通过 postMessage 传递的配置中获取，降级到 localStorage
+											const autoCheckRowCount = window.__EXTENSION_CONFIG__?.autoCheckRowCount ?? parseInt(localStorage.getItem("autoCheckRowCount") || "0", 10);
+
+											// 监听扩展配置更新（仅在首次加载时设置监听）
+											if (!window.__EXTENSION_CONFIG_LISTENER__) {
+												window.__EXTENSION_CONFIG_LISTENER__ = true;
+												window.addEventListener('message', function(event) {
+													if (event.data.type === '__EXTENSION_CONFIG_UPDATE__') {
+														window.__EXTENSION_CONFIG__ = event.data.data;
+													}
+												});
+											}
+
 											const filteredList = e.commitsList.filter((item) => {
 												// 过滤已合并，和合并节点
 												// 只要自己的

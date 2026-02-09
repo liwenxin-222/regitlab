@@ -262,3 +262,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   handle[action] && handle[action](request, sender, sendResponse);
   return true;
 });
+
+// 插件的配置对象（放在内容脚本的 window 上）
+window.__EXTENSION_CONFIG__ = {
+  autoCheckRowCount: 0
+};
+
+// 发送配置到页面（通过 postMessage）
+function sendConfigToPage() {
+  window.postMessage({
+    type: '__EXTENSION_CONFIG_UPDATE__',
+    data: { autoCheckRowCount: window.__EXTENSION_CONFIG__.autoCheckRowCount }
+  }, '*');
+}
+
+// 初始化：从 storage 获取值
+chrome.storage.local.get(['autoCheckRowCount'], (result) => {
+  const value = result.autoCheckRowCount || 0;
+  window.__EXTENSION_CONFIG__.autoCheckRowCount = value;
+  sendConfigToPage();
+});
+
+// 监听 storage 变化，实时更新配置
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === 'local' && changes.autoCheckRowCount) {
+    const newValue = changes.autoCheckRowCount.newValue || 0;
+    window.__EXTENSION_CONFIG__.autoCheckRowCount = newValue;
+    sendConfigToPage();
+  }
+});
